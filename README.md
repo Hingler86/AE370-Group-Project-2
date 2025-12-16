@@ -1,1 +1,15 @@
 # AE370-Group-Project-2
+
+This code simulates the arrestment of an aircraft landing on an aircraft carrier using an arresting wire and hydraulic braking system. The model captures the interaction between the elastic cable, the aircraft motion, and the arresting gear by coupling a spatially discretized cable model with ordinary differential equations for the aircraft and carriage. The goal of the simulation is to compute stopping time, stopping distance, and load histories during an arrestment event.
+
+All physical, initial-condition, and numerical parameters are stored in the Params dataclass, which serves as a single source of truth for the simulation configuration. This includes cable properties, aircraft and carriage masses, hydraulic stiffness and damping, initial touchdown speed, and numerical settings such as spatial resolution and time step size. A helper function is provided to generate a default set of parameters, which can be modified by the user for parametric studies.
+
+The cable is discretized using a uniform spatial mesh created by make_mesh. The global state vector stores interior cable displacements and velocities along with the aircraft and carriage positions and velocities. The functions pack_state and unpack_state manage conversion between the global state vector and its physical components, while build_full_u reconstructs the full cable displacement including boundary values imposed by the aircraft and carriage motion.
+
+Cable dynamics are handled by computing interior accelerations using finite differences, while boundary slopes are used to compute cable tension at each end. These tensions provide the coupling forces to the aircraft and carriage equations of motion. The function rhs assembles the complete time derivative of the state vector, combining the cable dynamics with the aircraft and hydraulic subsystem dynamics.
+
+Time integration is performed using a classical fourth-order Runge–Kutta method implemented in rk4_step. The integrate function advances the solution in time and automatically terminates the simulation when the aircraft velocity reaches zero, indicating a completed arrestment. The final time step is interpolated so the simulation ends exactly at zero aircraft velocity.
+
+The initial_state function constructs the starting condition for the simulation, with the cable initially undeformed, the carriage at rest, and the aircraft initialized with the specified touchdown speed. The run function ties everything together by building the mesh, initializing the state, integrating the system forward in time, and returning the spatial grid, time history, and full state history.
+
+Several post-processing and plotting functions are provided to analyze the results. These functions extract aircraft motion, compute cable tension and aircraft acceleration, and generate plots used to answer analysis questions. Outputs include stopping time, stopping distance, peak deceleration, and parameter-sweep trade studies. The code is structured to make it easy to perform parametric studies by modifying the Params object without changing the core solver logic.
